@@ -135,7 +135,7 @@ def processfiles(df_customers,df_customers2):
 
   cc = gewh.merge(gthc,on=["ID","DATE"],how="inner")
 
-  #genero resultado
+  #Separo en dos grupos
   calefonON = []
   calefonOFF = []
   def foo(x):
@@ -144,7 +144,7 @@ def processfiles(df_customers,df_customers2):
     for y in x.EWH_TIMESERIE:
       print(y)
       print(x.THC_TIMESERIE)
-      try: # En el caso de que 
+      try: # En el caso de que haya agujeros en el dataset, omitir.
         if(float(y[1])>0):
           calefonON.append([
             dtt.date.fromisoformat(x.DATE).month,
