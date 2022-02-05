@@ -9,6 +9,7 @@ from torch.utils.data import Dataset, DataLoader
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
+import math
 from multiprocessing import Pool
 DATADIR = 'E:/Data/ECD-UY'
 EWH_FILE_DIR = DATADIR + '/ewh/consumption_data_customers.csv'
@@ -58,7 +59,7 @@ def readfiles():
   ids = df_customers["id"].unique()
   #THC
   #ewh_dates = ["07","08","09","10","11","12"]
-  ewh_dates = ["07","08"]
+  ewh_dates = ["07"]
   pool = Pool(THREADS)
   frames = pool.map(reader,ewh_dates)
   pool.close()
@@ -328,6 +329,8 @@ def clasificador(calefonON,calefonOFF):
   # Variables auxiliares
   losses = []
   accur = []
+  lossesON = []
+  accurON = []
 
   print('Training with {} of size {}.'.format(number_of_batches, batch_size))
   print('Start training.....')
@@ -341,7 +344,20 @@ def clasificador(calefonON,calefonOFF):
       output = model(_x)
       # Calculamos la pérdida de la red (loss)
       loss = loss_fn(output,_y.reshape(-1,1))
-
+      outputN = output.detach().numpy()
+      print(outputN)
+      _yN = _y.detach().numpy()
+      lossN =0
+      k=0
+      q=0
+      for i in range(0,len(output)):
+        if(_yN[i]==1):
+          lossN += math.abs(outputN[i]-_yN[i])
+          if(math.abs(outputN[i]-1) < 0.05):
+            k +=1
+          else:
+            q +=1
+      accN = (k)/(k+q+0.0)
       # Calculamos estadísticas de precision
       predicted = model(torch.tensor(x_train,dtype=torch.float32).to(device))
       acc = (predicted.reshape(-1).detach().numpy().round() == y_train).mean()
@@ -353,9 +369,11 @@ def clasificador(calefonON,calefonOFF):
 
 
     if epoch%2 == 0:
+      lossesON.append(lossN)
       losses.append(loss)
       accur.append(acc)
-      print("Epoch {}\tLoss : {}\t Accuracy : {}".format(epoch,loss,acc))
+      accurON.append(accN)
+      print("Epoch {}\tLoss : {}\t Accuracy : {}\tLossON: {}\t AccON: {}".format(epoch,loss,acc,lossN,accN))
 
 
   # Mostramos la evolución de la pérdida
