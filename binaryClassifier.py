@@ -11,7 +11,9 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import math
 from multiprocessing import Pool
+import pickle
 DATADIR = 'E:/Data/ECD-UY'
+RESULTDIR = 'E:/Data/ECD-UY/'
 EWH_FILE_DIR = DATADIR + '/ewh/consumption_data_customers.csv'
 CUSTOMERS_DATA_FILE = DATADIR + '/ewh/consumption_data_customers.csv'
 THREADS = 2
@@ -160,6 +162,7 @@ def processfiles(df_customers,df_customers2):
   cc.apply(foo,axis=1)
   print(calefonON)
   print(len(calefonON))
+
   return calefonON,calefonOFF
 # RED NEURONAL
 def clasificador(calefonON,calefonOFF):
@@ -345,15 +348,14 @@ def clasificador(calefonON,calefonOFF):
       # Calculamos la pérdida de la red (loss)
       loss = loss_fn(output,_y.reshape(-1,1))
       outputN = output.detach().numpy()
-      print(outputN)
       _yN = _y.detach().numpy()
       lossN =0
       k=0
       q=0
       for i in range(0,len(output)):
         if(_yN[i]==1):
-          lossN += math.abs(outputN[i]-_yN[i])
-          if(math.abs(outputN[i]-1) < 0.05):
+          lossN += abs(outputN[i]-_yN[i])
+          if(abs(outputN[i]-1) < 0.05):
             k +=1
           else:
             q +=1
@@ -385,4 +387,8 @@ def clasificador(calefonON,calefonOFF):
 if __name__ == '__main__':   
   f1,f2 = readfiles()
   on,off = processfiles(f1,f2)
+  with open(RESULTDIR+'pickleON.txt', "wb") as fp:
+    pickle.dump(on,fp)
+  with open(RESULTDIR+'pickleOFF.txt', "wb") as fp:
+    pickle.dump(off,fp)
   clasificador(on,off)
